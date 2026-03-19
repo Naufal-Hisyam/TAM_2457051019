@@ -9,8 +9,15 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -79,6 +86,8 @@ fun HaloCpuApp() {
 
 @Composable
 fun HardwareCard(hardware: HardwareData) {
+    var isFavorite by remember { mutableStateOf(false) }
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -91,16 +100,32 @@ fun HardwareCard(hardware: HardwareData) {
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(id = hardware.gambarResId),
-                contentDescription = hardware.nama,
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(80.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(Color(0xFFE3F2FD))
-                    .padding(8.dp)
-            )
+            Box {
+                Image(
+                    painter = painterResource(id = hardware.gambarResId),
+                    contentDescription = hardware.nama,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(80.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Color(0xFFE3F2FD))
+                        .padding(8.dp)
+                )
+
+                IconButton(
+                    onClick = { isFavorite = !isFavorite },
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(32.dp)
+                ) {
+
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                        contentDescription = "Favorite Icon",
+                        tint = if (isFavorite) Color.Red else Color.Gray // Menggunakan Gray agar terlihat jelas di background gambar biru
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.width(16.dp))
 
