@@ -6,9 +6,10 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -53,37 +54,101 @@ fun HaloCpuApp() {
         HardwareData("Motherboard", "Papan besar tempat semua bagian komputer menempel dan bekerja sama.", R.drawable.motherboard)
     )
 
-    Column(
+    // 1. Mengubah Column + verticalScroll menjadi LazyColumn (Modul 6)
+    LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF0F4F8))
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .background(Color(0xFFF0F4F8)),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp) // Memberikan jarak otomatis antar item
     ) {
-        Card(
-            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-            colors = CardDefaults.cardColors(containerColor = Color(0xFF2196F3))
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(text = "Halo CPU", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+
+        // 2. Menggunakan scope function 'item' untuk membungkus header dan LazyRow (Modul 6)
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFF2196F3))
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Text(text = "Halo CPU", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                }
             }
+
+            Text(
+                text = "Komponen Populer",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF333333),
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
+
+            // 3. Menambahkan LazyRow untuk tampilan menyamping (Modul 6)
+            LazyRow(
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // Menampilkan 3 data pertama saja untuk LazyRow
+                items(hardwareList.take(3)) { hardware ->
+                    HardwareRowItem(hardware = hardware)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Text(
+                text = "Daftar Komponen Lengkap",
+                fontSize = 20.sp,
+                fontWeight = FontWeight.ExtraBold,
+                color = Color(0xFF333333),
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
         }
 
-        Text(
-            text = "Mari Mengenal Komputer!",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.ExtraBold,
-            color = Color(0xFF333333),
-            modifier = Modifier.padding(bottom = 16.dp)
-        )
-
-        hardwareList.forEach { hardware ->
+        // 4. Menggunakan scope function 'items' untuk me-render list keseluruhan (Modul 6)
+        items(hardwareList) { hardware ->
             HardwareCard(hardware = hardware)
-            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
 
+// 5. Membuat Fungsi Composable baru untuk item di LazyRow (Modul 6)
+@Composable
+fun HardwareRowItem(hardware: HardwareData) {
+    Card(
+        modifier = Modifier.width(160.dp),
+        shape = RoundedCornerShape(12.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White)
+    ) {
+        Column {
+            Image(
+                painter = painterResource(id = hardware.gambarResId),
+                contentDescription = hardware.nama,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(100.dp)
+                    .background(Color(0xFFE3F2FD))
+                    .padding(16.dp),
+                contentScale = ContentScale.Fit
+            )
+            Column(modifier = Modifier.padding(12.dp)) {
+                Text(
+                    text = hardware.nama,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF1565C0)
+                )
+                Text(
+                    text = "Klik untuk detail",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 4.dp)
+                )
+            }
+        }
+    }
+}
+
+// Composable HardwareCard yang sebelumnya (digunakan untuk LazyColumn)
 @Composable
 fun HardwareCard(hardware: HardwareData) {
     var isFavorite by remember { mutableStateOf(false) }
@@ -118,11 +183,10 @@ fun HardwareCard(hardware: HardwareData) {
                         .align(Alignment.TopEnd)
                         .size(32.dp)
                 ) {
-
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite Icon",
-                        tint = if (isFavorite) Color.Red else Color.Gray // Menggunakan Gray agar terlihat jelas di background gambar biru
+                        tint = if (isFavorite) Color.Red else Color.Gray
                     )
                 }
             }
