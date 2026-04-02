@@ -25,15 +25,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+// Import custom theme yang sudah dibuat
+import com.example.praktam_2457051019.ui.theme.PraktamTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            HaloCpuApp()
+            PraktamTheme {
+                HaloCpuApp()
+            }
         }
     }
 }
@@ -54,39 +56,37 @@ fun HaloCpuApp() {
         HardwareData("Motherboard", "Papan besar tempat semua bagian komputer menempel dan bekerja sama.", R.drawable.motherboard)
     )
 
-    // 1. Mengubah Column + verticalScroll menjadi LazyColumn (Modul 6)
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF0F4F8)),
+            .background(MaterialTheme.colorScheme.background), // Menggunakan warna tema
         contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp) // Memberikan jarak otomatis antar item
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
-        // 2. Menggunakan scope function 'item' untuk membungkus header dan LazyRow (Modul 6)
         item {
             Card(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFF2196F3))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary) // Menggunakan warna tema
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
-                    Text(text = "Halo CPU", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp)
+                    Text(
+                        text = "Halo CPU",
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        style = MaterialTheme.typography.titleMedium // Menggunakan teks tema
+                    )
                 }
             }
 
             Text(
                 text = "Komponen Populer",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF333333),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 12.dp)
             )
 
-            // 3. Menambahkan LazyRow untuk tampilan menyamping (Modul 6)
             LazyRow(
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // Menampilkan 3 data pertama saja untuk LazyRow
                 items(hardwareList.take(3)) { hardware ->
                     HardwareRowItem(hardware = hardware)
                 }
@@ -96,28 +96,25 @@ fun HaloCpuApp() {
 
             Text(
                 text = "Daftar Komponen Lengkap",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF333333),
+                color = MaterialTheme.colorScheme.onSurface,
+                style = MaterialTheme.typography.titleLarge,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
         }
 
-        // 4. Menggunakan scope function 'items' untuk me-render list keseluruhan (Modul 6)
         items(hardwareList) { hardware ->
             HardwareCard(hardware = hardware)
         }
     }
 }
 
-// 5. Membuat Fungsi Composable baru untuk item di LazyRow (Modul 6)
 @Composable
 fun HardwareRowItem(hardware: HardwareData) {
     Card(
         modifier = Modifier.width(160.dp),
         shape = RoundedCornerShape(12.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
             Image(
@@ -126,21 +123,20 @@ fun HardwareRowItem(hardware: HardwareData) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(100.dp)
-                    .background(Color(0xFFE3F2FD))
+                    .background(MaterialTheme.colorScheme.surfaceVariant)
                     .padding(16.dp),
                 contentScale = ContentScale.Fit
             )
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
                     text = hardware.nama,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF1565C0)
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.tertiary
                 )
                 Text(
                     text = "Klik untuk detail",
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color.Gray,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
@@ -148,7 +144,6 @@ fun HardwareRowItem(hardware: HardwareData) {
     }
 }
 
-// Composable HardwareCard yang sebelumnya (digunakan untuk LazyColumn)
 @Composable
 fun HardwareCard(hardware: HardwareData) {
     var isFavorite by remember { mutableStateOf(false) }
@@ -156,7 +151,7 @@ fun HardwareCard(hardware: HardwareData) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Row(
@@ -173,7 +168,7 @@ fun HardwareCard(hardware: HardwareData) {
                     modifier = Modifier
                         .size(80.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(Color(0xFFE3F2FD))
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
                         .padding(8.dp)
                 )
 
@@ -186,7 +181,7 @@ fun HardwareCard(hardware: HardwareData) {
                     Icon(
                         imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                         contentDescription = "Favorite Icon",
-                        tint = if (isFavorite) Color.Red else Color.Gray
+                        tint = if (isFavorite) Color.Red else MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
@@ -196,23 +191,26 @@ fun HardwareCard(hardware: HardwareData) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = hardware.nama,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color(0xFF1565C0)
+                    style = MaterialTheme.typography.titleMedium,
+                    color = MaterialTheme.colorScheme.tertiary
                 )
                 Text(
                     text = hardware.deskripsi,
-                    fontSize = 14.sp,
-                    color = Color.Gray,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
                 )
 
                 Button(
                     onClick = { },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF9800)),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                     modifier = Modifier.height(36.dp)
                 ) {
-                    Text(text = "Pelajari", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(
+                        text = "Pelajari",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onPrimary
+                    )
                 }
             }
         }
