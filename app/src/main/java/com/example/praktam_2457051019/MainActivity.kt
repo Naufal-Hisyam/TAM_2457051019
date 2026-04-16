@@ -18,6 +18,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,8 +27,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-// Import custom theme yang sudah dibuat
 import com.example.praktam_2457051019.ui.theme.PraktamTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -48,6 +50,8 @@ data class HardwareData(
 
 @Composable
 fun HaloCpuApp() {
+    val snackbarHostState = remember { SnackbarHostState() }
+
     val hardwareList = listOf(
         HardwareData("CPU", "Tugasnya berpikir dan memerintah semua bagian lain.", R.drawable.cpu),
         HardwareData("Memori RAM", "Ingatan jangka pendek supaya komputer tidak lemot!", R.drawable.ram),
@@ -56,55 +60,62 @@ fun HaloCpuApp() {
         HardwareData("Motherboard", "Papan besar tempat semua bagian komputer menempel dan bekerja sama.", R.drawable.motherboard)
     )
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background), // Menggunakan warna tema
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        item {
-            Card(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary) // Menggunakan warna tema
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Halo CPU",
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        style = MaterialTheme.typography.titleMedium // Menggunakan teks tema
-                    )
+    Box(modifier = Modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Text(
+                            text = "Halo CPU",
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
                 }
+
+                Text(
+                    text = "Komponen Populer",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 12.dp)
+                )
+
+                LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    items(hardwareList.take(3)) { hardware ->
+                        HardwareRowItem(hardware = hardware)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "Daftar Komponen Lengkap",
+                    color = MaterialTheme.colorScheme.onSurface,
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
             }
 
-            Text(
-                text = "Komponen Populer",
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 12.dp)
-            )
-
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(hardwareList.take(3)) { hardware ->
-                    HardwareRowItem(hardware = hardware)
-                }
+            items(hardwareList) { hardware ->
+                HardwareCard(hardware = hardware, snackbarHostState = snackbarHostState)
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
-                text = "Daftar Komponen Lengkap",
-                color = MaterialTheme.colorScheme.onSurface,
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
         }
 
-        items(hardwareList) { hardware ->
-            HardwareCard(hardware = hardware)
-        }
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 
@@ -145,8 +156,11 @@ fun HardwareRowItem(hardware: HardwareData) {
 }
 
 @Composable
-fun HardwareCard(hardware: HardwareData) {
+fun HardwareCard(hardware: HardwareData, snackbarHostState: SnackbarHostState) {
     var isFavorite by remember { mutableStateOf(false) }
+
+    var isLoading by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope()
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -202,15 +216,37 @@ fun HardwareCard(hardware: HardwareData) {
                 )
 
                 Button(
-                    onClick = { },
+                    onClick = {
+                        coroutineScope.launch {
+                            isLoading = true // Aktifkan loading
+                            delay(2000) // Delay selama 2 detik
+                            isLoading = false // Matikan loading
+                            snackbarHostState.showSnackbar("Detail ${hardware.nama} berhasil dibuka!")
+                        }
+                    },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                    modifier = Modifier.height(36.dp)
+                    modifier = Modifier.height(36.dp),
+                    enabled = !isLoading // Tombol tidak bisa diklik saat loading (Modul 9)
                 ) {
-                    Text(
-                        text = "Pelajari",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
+                    if (isLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            color = MaterialTheme.colorScheme.onPrimary,
+                            strokeWidth = 2.dp
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = "Memproses...",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text(
+                            text = "Pelajari",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }
